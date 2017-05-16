@@ -17,8 +17,10 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -112,7 +114,37 @@ public class GoogleMapsActivity extends AppCompatActivity implements GoogleApiCl
             // add the MarkerOptions to the Google Map
             // add the Place information to the places list
             // notify the placesAdapter that the data set was changed
+            String latitudeContent = latitudeEditText.getText().toString();
+            String longitudeContent = longitudeEditText.getText().toString();
+            String nameContent = nameEditText.getText().toString();
 
+            if (latitudeContent == null || latitudeContent.isEmpty() ||
+                    longitudeContent == null || longitudeContent.isEmpty() ||
+                    nameContent == null || nameContent.isEmpty()) {
+                Toast.makeText(GoogleMapsActivity.this, "GPS coordinates / Name should be filled!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            double latitudeValue = Double.parseDouble(latitudeContent);
+            double longitudeValue = Double.parseDouble(longitudeContent);
+            navigateToLocation(latitudeValue, longitudeValue);
+
+            MarkerOptions marker = new MarkerOptions()
+                    .position(new LatLng(
+                            Double.parseDouble(latitudeContent),
+                            Double.parseDouble(longitudeContent)
+                    ))
+                    .title(nameContent);
+            marker.icon(BitmapDescriptorFactory.defaultMarker(Utilities.getDefaultMarker(markerTypeSpinner.getSelectedItemPosition())));
+            googleMap.addMarker(marker);
+            places.add(new Place(
+                            Double.parseDouble(latitudeContent),
+                            Double.parseDouble(longitudeContent),
+                            nameContent,
+                            Utilities.getDefaultMarker(markerTypeSpinner.getSelectedItemPosition())
+                    )
+            );
+            placesAdapter.notifyDataSetChanged();
         }
     }
 
@@ -127,7 +159,18 @@ public class GoogleMapsActivity extends AppCompatActivity implements GoogleApiCl
             // clear the Google Map
             // clear the places List
             // notify the placesAdapter that the data set was changed
+            if (places == null || places.isEmpty()) {
+                Toast.makeText(
+                        GoogleMapsActivity.this,
+                        "There are no places available!",
+                        Toast.LENGTH_SHORT
+                ).show();
+                return;
+            }
 
+            googleMap.clear();
+            places.clear();
+            placesAdapter.notifyDataSetChanged();
         }
     }
 
